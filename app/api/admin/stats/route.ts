@@ -1,0 +1,4 @@
+import { NextResponse } from "next/server";
+import { isAdmin } from "@/lib/auth";
+import { db } from "@/lib/db";
+export async function GET(){try{if(!await isAdmin())return NextResponse.json({error:"Sesi admin tidak ada. Silakan login ulang."},{status:401});const client=db();const [o,u]=await Promise.all([client.from("orders").select("*").order("created_at",{ascending:false}).limit(100),client.from("users").select("*").order("created_at",{ascending:false}).limit(50)]);if(o.error)throw o.error;if(u.error)throw u.error;const orders=o.data||[],users=u.data||[];return NextResponse.json({totalOrders:orders.length,activeOrders:orders.filter(x=>["pending","active"].includes(x.status)).length,totalRevenue:orders.filter(x=>["completed","active"].includes(x.status)).reduce((a,x)=>a+Number(x.price||0),0),totalUsers:users.length,orders,users});}catch(e:any){return NextResponse.json({error:e.message||"Dashboard gagal dimuat."},{status:500});}}

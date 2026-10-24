@@ -1,0 +1,3 @@
+import { NextResponse } from "next/server";
+import { averpay } from "@/lib/providers";
+export async function POST(req:Request){try{const {amount}=await req.json();const n=Number(amount);if(!Number.isInteger(n)||n<1000||n>1000000)return NextResponse.json({error:"Nominal harus Rp1.000–Rp1.000.000."},{status:400});return NextResponse.json(await averpay("invoice",{amount:n}));}catch(e:any){return NextResponse.json({error:e.message},{status:502});}}

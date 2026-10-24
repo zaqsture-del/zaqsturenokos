@@ -1,0 +1,4 @@
+import { NextResponse } from "next/server";
+import { isAdmin } from "@/lib/auth";
+import { db } from "@/lib/db";
+export async function PATCH(req:Request,ctx:{params:Promise<{id:string}>}){try{if(!await isAdmin())return NextResponse.json({error:"Tidak diizinkan."},{status:401});const {id}=await ctx.params;const body=await req.json();const allowed=["pending","active","completed","cancelled","failed","refunded"];if(!allowed.includes(body.status))return NextResponse.json({error:"Status tidak valid."},{status:400});const {data,error}=await db().from("orders").update({status:body.status,admin_note:String(body.admin_note||"")}).eq("id",id).select().single();if(error)throw error;return NextResponse.json({order:data});}catch(e:any){return NextResponse.json({error:e.message},{status:500});}}
